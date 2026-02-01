@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 
 // Task interface define
@@ -251,6 +252,9 @@ export default function Home() {
           </div>
         )}
       </div>
+      <Link href='/gemini-chat'>
+      <button  className="text-white font-bold bg-green-500 py-4 px-4 cursor-pointer shadow-2xl">Gemini Chat</button></Link>
     </div>
+    
   );
 }
