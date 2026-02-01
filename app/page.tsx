@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 // Task interface define
 interface Task {
@@ -14,8 +14,8 @@ interface Task {
 
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [title, setTitle] = useState<string>('');
-  const [description, setDescription] = useState<string>('');
+  const [title, setTitle] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -26,69 +26,70 @@ export default function Home() {
 
   const fetchTasks = async (): Promise<void> => {
     try {
-      const response = await fetch('/api/tasks');
+      const response = await fetch("/api/tasks");
       const data: Task[] = await response.json();
       setTasks(data);
     } catch (error) {
-      console.error('Error fetching tasks:', error);
+      console.error("Error fetching tasks:", error);
     } finally {
       setLoading(false);
     }
   };
 
   // Create or Update task
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>,
+  ): Promise<void> => {
     e.preventDefault();
-    
-    if (!title.trim()) return;
 
+    if (!title.trim()) return;
     try {
       if (editingId) {
         // Update task
-        const taskToUpdate = tasks.find(t => t.id === editingId);
+        const taskToUpdate = tasks.find((t) => t.id === editingId);
         await fetch(`/api/tasks/${editingId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            title, 
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
             description,
-            completed: taskToUpdate?.completed || false
-          })
+            completed: taskToUpdate?.completed || false,
+          }),
         });
         setEditingId(null);
       } else {
         // Create new task
-        await fetch('/api/tasks', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, description })
+        await fetch("/api/tasks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, description }),
         });
       }
-      setTitle('');
-      setDescription('');
+      setTitle("");
+      setDescription("");
       fetchTasks();
     } catch (error) {
-      console.error('Error saving task:', error);
+      console.error("Error saving task:", error);
     }
   };
 
   // Edit task
   const handleEdit = (task: Task): void => {
     setTitle(task.title);
-    setDescription(task.description || '');
+    setDescription(task.description || "");
     setEditingId(task.id);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Delete task
   const handleDelete = async (id: string): Promise<void> => {
-    if (!confirm('Are you sure?')) return;
-    
+    if (!confirm("Are you sure?")) return;
+
     try {
-      await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+      await fetch(`/api/tasks/${id}`, { method: "DELETE" });
       fetchTasks();
     } catch (error) {
-      console.error('Error deleting task:', error);
+      console.error("Error deleting task:", error);
     }
   };
 
@@ -96,24 +97,24 @@ export default function Home() {
   const toggleComplete = async (task: Task): Promise<void> => {
     try {
       await fetch(`/api/tasks/${task?.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           title: task.title,
           description: task?.description,
-          completed: !task.completed 
-        })
+          completed: !task.completed,
+        }),
       });
       fetchTasks();
     } catch (error) {
-      console.error('Error toggling task:', error);
+      console.error("Error toggling task:", error);
     }
   };
 
   const cancelEdit = (): void => {
     setEditingId(null);
-    setTitle('');
-    setDescription('');
+    setTitle("");
+    setDescription("");
   };
 
   if (loading) {
@@ -134,7 +135,7 @@ export default function Home() {
         {/* Form */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-200">
           <h2 className="text-xl font-semibold mb-4 text-gray-700">
-            {editingId ? '✏️ Edit Task' : 'Add new task'}
+            {editingId ? "Edit Task" : "Add new task"}
           </h2>
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
@@ -167,7 +168,7 @@ export default function Home() {
                 type="submit"
                 className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-medium shadow-md hover:shadow-lg"
               >
-                {editingId ? 'Update' : '+ Add'}
+                {editingId ? "Update" : "+ Add"}
               </button>
               {editingId && (
                 <button
@@ -213,16 +214,20 @@ export default function Home() {
                     <div className="flex-1">
                       <h3
                         className={`text-xl font-semibold ${
-                          task?.completed ? 'line-through text-gray-400' : 'text-gray-800'
+                          task?.completed
+                            ? "line-through text-gray-400"
+                            : "text-gray-800"
                         }`}
                       >
                         {task?.title}
                       </h3>
                       {task?.description && (
-                        <p className="text-gray-600 mt-1">{task?.description}</p>
+                        <p className="text-gray-600 mt-1">
+                          {task?.description}
+                        </p>
                       )}
                       <p className="text-xs text-gray-400 mt-2">
-                       {task?.createdAt}
+                        {task?.createdAt}
                       </p>
                     </div>
                   </div>

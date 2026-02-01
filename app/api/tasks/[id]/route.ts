@@ -1,10 +1,5 @@
-
-
 import { prisma } from '@/app/lib/prisma';
 import { NextResponse } from 'next/server';
-
-
-
 
 // GET Task By ID
 export async function GET(
