@@ -1,11 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function Home() {
   const [userInput, setUserInput] = useState<string>('');
   const [aiResponse, setAiResponse] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  
+ 
+  const responseEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll function
+  const scrollToBottom = () => {
+    responseEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    if (aiResponse) {
+      scrollToBottom();
+    }
+  }, [aiResponse]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -43,9 +57,7 @@ export default function Home() {
 
       while (true) {
         const { done, value } = await reader.read();
-        
         if (done) break;
-
         const chunk = decoder.decode(value, { stream: true });
         fullText += chunk;
         setAiResponse(fullText); 
@@ -84,7 +96,7 @@ export default function Home() {
                 rows={4}
                 disabled={loading}
               />
-            </div>
+            </div >
             <button
               type="submit"
               disabled={loading || !userInput.trim()}
@@ -97,8 +109,8 @@ export default function Home() {
 
         {/* AI Response */}
         {(aiResponse || loading) && (
-          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-            <h2 className="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
+          <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 max-h-150 overflow-y-auto">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2 sticky top-0 bg-white pb-2">
               Gemini Response:
             </h2>
             <div className="prose max-w-none">
@@ -107,6 +119,8 @@ export default function Home() {
                 {loading && (
                   <span className="inline-block w-2 h-5 bg-purple-600 animate-pulse ml-1"></span>
                 )}
+                {/* Auto-scroll anchor */}
+                <div ref={responseEndRef} />
               </div>
             </div>
           </div>
