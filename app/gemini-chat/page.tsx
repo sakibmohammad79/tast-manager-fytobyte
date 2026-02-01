@@ -22,13 +22,35 @@ export default function Home() {
         body: JSON.stringify({ prompt: userInput })
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setAiResponse(data.response);
-      } else {
-        setAiResponse('Error: ' + data.error);
+      if (!response.ok) {
+        const errorData = await response.json();
+        setAiResponse('Error: ' + errorData.error);
+        setLoading(false);
+        return;
       }
+
+      // Read streaming response
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        setAiResponse('Error: No response stream');
+        setLoading(false);
+        return;
+      }
+
+      let fullText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        fullText += chunk;
+        setAiResponse(fullText); 
+      }
+
     } catch (error) {
       console.error('Error:', error);
       setAiResponse('Failed to get response from AI');
@@ -44,7 +66,7 @@ export default function Home() {
           Gemini AI Chat
         </h1>
         <p className="text-center text-gray-600 mb-8">
-          Ask anything to Gemini AI
+          Ask anything to Gemini AI - Real-time Streaming
         </p>
 
         {/* Input Form */}
@@ -55,7 +77,7 @@ export default function Home() {
                 Write your question here
               </label>
               <textarea
-                placeholder="example: What is javaScript?"
+                placeholder="example: What is JavaScript?"
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition resize-none"
@@ -68,7 +90,7 @@ export default function Home() {
               disabled={loading || !userInput.trim()}
               className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition font-medium shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? '⏳ Processing...' : 'Send to Gemini'}
+              {loading ? 'Generating...' : 'Send to Gemini'}
             </button>
           </form>
         </div>
@@ -77,19 +99,16 @@ export default function Home() {
         {(aiResponse || loading) && (
           <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
             <h2 className="text-xl font-semibold mb-4 text-gray-700 flex items-center gap-2">
-               Gemini Response:
+              Gemini Response:
             </h2>
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <div className="prose max-w-none">
+              <div className="text-gray-800 whitespace-pre-wrap leading-relaxed">
+                {aiResponse}
+                {loading && (
+                  <span className="inline-block w-2 h-5 bg-purple-600 animate-pulse ml-1"></span>
+                )}
               </div>
-            ) : (
-              <div className="prose max-w-none">
-                <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">
-                  {aiResponse}
-                </p>
-              </div>
-            )}
+            </div>
           </div>
         )}
       </div>
